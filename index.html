@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Курс ИИ демо</title>
+    <link rel="icon" href="./res/data/favicon.ico">
+    <script>
+        const course = new URL("./res/index.html", window.location.href);
+        course.search = window.location.search;
+        course.hash = window.location.hash;
+        window.location.replace(course);
+    </script>
+</head>
+<body>
+    <a href="./res/index.html">Открыть курс «Курс ИИ демо»</a>
+</body>
+</html>

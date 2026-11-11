@@ -34,6 +34,7 @@
 <resource identifier="resource" type="webcontent" adlcp:scormType="sco" href="res/index.html">
 <file href="res/index.html"/>
 <file href="res/lms.js"/>
+<file href="res/web-session.js"/>
 <file href="res/data/thmb1.jpg"/>
 <file href="res/data/slide1.js"/>
 <file href="res/data/slide1.css"/>
