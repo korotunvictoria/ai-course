@@ -66,26 +66,50 @@
         }
     };
 
+    const quizOutlines = new WeakMap();
+
     window.iSpringWebSession = {
+        connectQuizOutline(quiz, openOutline) {
+            const skin = quiz.skin().displayObject();
+            if (!quizOutlines.has(skin)) {
+                skin.addEventListener("click", event => {
+                    const outline = skin.querySelector(".quiz-control-panel__container_left button");
+                    if (!outline?.contains(event.target)) return;
+
+                    event.stopImmediatePropagation();
+                    quizOutlines.get(skin)();
+                }, true);
+            }
+            quizOutlines.set(skin, openOutline);
+        },
         attach(player) {
             const view = player.view();
             const playback = view.playbackController();
+            let activeSkin;
+            let activeContainer;
 
-            playback.slideChangeEvent().addHandler(() => {
-                requestAnimationFrame(() => {
-                    const quiz = playback.quizPlayer();
-                    if (!quiz) return;
+            function layoutQuiz() {
+                const quiz = playback.quizPlayer();
+                const skin = quiz?.skin().displayObject();
+                const container = skin?.closest(".universal_mini");
 
-                    // The embedded quiz can mount without receiving its initial size.
-                    const skin = quiz.skin().displayObject();
-                    if (skin.style.width && skin.style.height) return;
+                if (activeSkin !== skin || activeContainer !== container) {
+                    activeContainer?.classList.remove("web-quiz-active");
+                    activeContainer = container;
+                    activeSkin = skin;
+                    activeContainer?.classList.add("web-quiz-active");
+                }
 
-                    const container = view.displayObject().parentElement;
-                    if (container?.clientWidth && container.clientHeight) {
-                        quiz.resize(container.clientWidth, container.clientHeight);
-                    }
-                });
-            });
+                // Fit the quiz to the viewport, including its own navigation panel.
+                if (container) {
+                    quiz.resize(document.documentElement.clientWidth, window.innerHeight);
+                }
+            }
+
+            const scheduleLayout = () => requestAnimationFrame(layoutQuiz);
+            playback.slideChangeEvent().addHandler(scheduleLayout);
+            window.addEventListener("resize", scheduleLayout);
+            scheduleLayout();
         }
     };
     window.addEventListener("pagehide", save);
