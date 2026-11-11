@@ -85,28 +85,34 @@
         attach(player) {
             const view = player.view();
             const playback = view.playbackController();
-            let activeSkin;
             let activeContainer;
 
             function layoutQuiz() {
                 const quiz = playback.quizPlayer();
                 const skin = quiz?.skin().displayObject();
-                const container = skin?.closest(".universal_mini");
+                const container = skin?.closest(".universal_mini, .universal");
 
-                if (activeSkin !== skin || activeContainer !== container) {
+                if (activeContainer !== container) {
                     activeContainer?.classList.remove("web-quiz-active");
+                    resizeObserver.disconnect();
                     activeContainer = container;
-                    activeSkin = skin;
                     activeContainer?.classList.add("web-quiz-active");
+                    if (activeContainer) resizeObserver.observe(activeContainer);
                 }
 
-                // Fit the quiz to the viewport, including its own navigation panel.
-                if (container) {
+                if (container?.matches(".universal")) {
+                    // Use the entire desktop player, above its slide area and below its popups.
+                    if (skin.parentElement !== container) {
+                        container.insertBefore(skin, container.querySelector(":scope > .popups-layer"));
+                    }
+                    quiz.resize(container.clientWidth, container.clientHeight);
+                } else if (container) {
                     quiz.resize(document.documentElement.clientWidth, window.innerHeight);
                 }
             }
 
             const scheduleLayout = () => requestAnimationFrame(layoutQuiz);
+            const resizeObserver = new ResizeObserver(scheduleLayout);
             playback.slideChangeEvent().addHandler(scheduleLayout);
             window.addEventListener("resize", scheduleLayout);
             scheduleLayout();
